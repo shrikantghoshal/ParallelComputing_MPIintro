@@ -27,7 +27,7 @@
 //
 int main( int argc, char **argv )
 {
-    int i;
+    int i, p;
 
     //
     // Initialisation.
@@ -75,9 +75,76 @@ int main( int argc, char **argv )
     double startTime = MPI_Wtime();
 
 
+	if( rank==0 )
+	{
+		localSize = globalSize / numProcs;
+
+		// Note &localSize looks to the MPI function like an array of size 1.
+		for( p=1; p<numProcs; p++ )
+			MPI_Send( &localSize, 1, MPI_INT, p ,0, MPI_COMM_WORLD );
+	}
+	else
+	{
+		MPI_Recv( &localSize, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
+	}
+
     //
     // Task 1: Calculate the mean using all available processes.
     //
+    
+    //send localSize to all ranks to allocate appropriate memory
+    float *localData= (float*) malloc( localSize*sizeof(float) );
+    if( !localData )
+	{
+		printf( "Could not allocate memory for the local data array on rank %d.\n", rank );
+		MPI_Finalize();
+		return EXIT_FAILURE;
+	}
+    
+    //send localData to ranks
+    if( rank==0 )
+	{
+		// Copy first segment to own localData (nb. never 'send' to self!)
+		for( i=0; i<localSize; i++ ) localData[i] = globalData[i];
+
+		// Send the remaining segments.
+		for( p=1; p<numProcs; p++ )
+			MPI_Send( &globalData[p*localSize], localSize, MPI_INT, p, 0, MPI_COMM_WORLD );
+	}
+	else
+	{
+		MPI_Recv( localData, localSize, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
+	}
+
+    
+    float localMean=0, localSum=0;
+    for(p=0; p<localSize; p++)
+    {
+        localSum+=localData[p];
+    }
+    localMean = localSum/localSize;
+    
+    // Point-to-point: Use a loop of send-and-receives.
+    float globalMean = 0, globalMeanSum = 0;
+	if( rank==0 )
+	{
+		// Start the running total with rank 0's count.
+		globalMeanSum = localSum;
+
+		// Now add on all of the counts from the other processes.
+		for( p=1; p<numProcs; p++ )
+		{
+			int next;
+			MPI_Recv( &next, 1, MPI_FLOAT, p, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
+			globalSum += next;
+		}
+        globalMean = globalMeanSum/numProcs;
+	}
+	else
+	{
+		MPI_Send( &globalMeanSum, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD );
+	}
+
 
 
     //
