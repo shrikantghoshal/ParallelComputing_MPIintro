@@ -169,7 +169,8 @@ int main( int argc, char **argv )
      float localSumSq = 0;
     for(p=0;p<localSize; p++)
     {
-        localSumSq += (*localData - globalMean)*(*localData - globalMean);
+        localSumSq += ((*localData)*(*localData)) + (globalMean*globalMean) - (2*(*localData)*(globalMean));
+        // (*localData - globalMean)*(*localData - globalMean);
     }
     
     float globalVariance = 0, globalSumSq = 0;
