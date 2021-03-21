@@ -123,6 +123,7 @@ int main( int argc, char **argv )
         localSum+=localData[p];
     }
     localMean = localSum/localSize;
+    printf("\n%f is the local mean at %d", &localMean, &numProcs);
     
     // Point-to-point: Use a loop of send-and-receives.
     float globalMean = 0, globalMeanSum = 0;
@@ -134,7 +135,7 @@ int main( int argc, char **argv )
 		// Now add on all of the counts from the other processes.
 		for( p=1; p<numProcs; p++ )
 		{
-			int next;
+			float next;
 			MPI_Recv( &next, 1, MPI_FLOAT, p, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
 			globalMeanSum += next;
 		}
