@@ -105,8 +105,8 @@ int main( int argc, char **argv )
     if( rank==0 )
 	{
         MPI_Scatter( globalData , localSize , MPI_FLOAT , localData , localSize , MPI_FLOAT , 0 , MPI_COMM_WORLD);
-		// // Copy first segment to own localData (nb. never 'send' to self!)
-		// for( i=0; i<localSize; i++ ) localData[i] = globalData[i];
+		// Copy first segment to own localData (nb. never 'send' to self!)
+		for( i=0; i<localSize; i++ ) localData[i] = globalData[i];
 
 		// // Send the remaining segments.
 		// for( p=1; p<numProcs; p++ )
