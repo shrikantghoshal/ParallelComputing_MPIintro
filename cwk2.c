@@ -74,7 +74,7 @@ int main( int argc, char **argv )
     // Start the timing now, after the data has been loaded (will only output on rank 0).
     double startTime = MPI_Wtime();
 
-
+    
 	if( rank==0 )
 	{
 		localSize = globalSize / numProcs;
@@ -105,8 +105,26 @@ int main( int argc, char **argv )
     //Collective communication
     MPI_Scatter( globalData , localSize , MPI_FLOAT , localData , localSize , MPI_FLOAT , 0 , MPI_COMM_WORLD);
     
+    float localMean=0, localSum=0;
+    for(p=0; p<localSize; p++)
+    {
+        localSum+=localData[p];
+    }
+    localMean = localSum/localSize;
+    
+    float globalMean = 0, globalMeanSum = 0;
+    float globalMeanArray[numProcs-1];
+	MPI_Gather( &localMean, 1, MPI_FLOAT , globalMeanArray , 1, MPI_FLOAT , 0 , MPI_COMM_WORLD);
 
-    // //Non-collective communication
+    for( p=0; p<numProcs; p++ )
+	{
+		globalMeanSum+=globalMeanArray[p];
+	}
+
+    globalMean = globalMeanSum/numProcs;
+
+
+   // //Non-collective communication - Sending data to all ranks for Mean
     // if( rank==0 )
 	// {
         
@@ -122,27 +140,8 @@ int main( int argc, char **argv )
 	// 	MPI_Recv( localData, localSize, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
 	// }
 
-    
-    float localMean=0, localSum=0;
-    for(p=0; p<localSize; p++)
-    {
-        localSum+=localData[p];
-    }
-    localMean = localSum/localSize;
-    
-    
-    float globalMean = 0, globalMeanSum = 0;
-    float globalMeanArray[numProcs-1];
-	MPI_Gather( &localMean, 1, MPI_FLOAT , globalMeanArray , 1, MPI_FLOAT , 0 , MPI_COMM_WORLD);
+    //Non-collective communication - combining data from all ranks for Mean
 
-    for( p=0; p<numProcs; p++ )
-		{
-			globalMeanSum+=globalMeanArray[p];
-		}
-
-        globalMean = globalMeanSum/numProcs;
-
-    //non-collective communication
     // if( rank==0 )
 	// {
 	// 	// Start the running total with rank 0's count.
@@ -162,11 +161,28 @@ int main( int argc, char **argv )
 	// 	MPI_Send( &localMean, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD );
 	// }
 
-
+//=============================Task 1 END=============================//
 
     //
     // Task 2. Calculate the variance using all processes.
     //
+     float localSumSq = 0;
+    for(p=0;p<localSize; p++)
+    {
+        localSumSq += (localData - localMean)*(localData - localMean);
+    }
+    
+    float globalVariance = 0, globalSumSq = 0;
+    float globalSumSqArray[numProcs-1];
+	MPI_Gather( &localSumSq, 1, MPI_FLOAT , globalSumSqArray, 1, MPI_FLOAT , 0 , MPI_COMM_WORLD);
+
+    for( p=0; p<numProcs; p++ )
+	{
+		globalSumSq+=globalSumSqArray[p];
+	}
+
+    globalVariance = globalSumSq/globalSize;
+    
 
 
     //
@@ -180,7 +196,7 @@ int main( int argc, char **argv )
         // Your code MUST call this function after the mean and variance have been calculated using your parallel algorithms.
         // Do not modify the function itself (which is defined in 'cwk2_extra.h'), as it will be replaced with a different
         // version for the purpose of assessing. Also, don't just put the values from serial calculations here or you will lose marks.
-        finalMeanAndVariance( globalMean, 0.0 );
+        finalMeanAndVariance( globalMean, globalVariance);
             // You should replace the first argument with your mean, and the second with your variance.
 
         // Check the answers against the serial calculations. This also demonstrates how to perform the calculations
