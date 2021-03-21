@@ -143,8 +143,7 @@ int main( int argc, char **argv )
 	}
 	else
 	{
-        printf("\n%f is the local mean at %d", &localMean, numProcs);
-		MPI_Send( &globalMeanSum, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD );
+		MPI_Send( &localMean, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD );
 	}
 
 
