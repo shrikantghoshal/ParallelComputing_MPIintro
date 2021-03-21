@@ -136,7 +136,7 @@ int main( int argc, char **argv )
 		{
 			int next;
 			MPI_Recv( &next, 1, MPI_FLOAT, p, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
-			globalSum += next;
+			globalMeanSum += next;
 		}
         globalMean = globalMeanSum/numProcs;
 	}
