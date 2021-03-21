@@ -166,11 +166,22 @@ int main( int argc, char **argv )
     //
     // Task 2. Calculate the variance using all processes.
     //
-     float localSumSq = 0;
+
+    if( rank==0 )
+	{
+        	// Note &localSize looks to the MPI function like an array of size 1.
+		for( p=1; p<numProcs; p++ )
+			MPI_Send( &globalMean, 1, MPI_FLOAT, p ,0, MPI_COMM_WORLD );
+	}
+	else
+	{
+		MPI_Recv( &globalMean, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
+	}
+
+    float localSumSq = 0;
     for(p=0;p<localSize; p++)
     {
-        localSumSq += ((*localData)*(*localData)) + (globalMean*globalMean) - (2*(*localData)*(globalMean));
-        // (*localData - globalMean)*(*localData - globalMean);
+        localSumSq += (*localData - globalMean)*(*localData - globalMean);
     }
     
     float globalVariance = 0, globalSumSq = 0;
