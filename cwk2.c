@@ -132,7 +132,7 @@ int main( int argc, char **argv )
     
     
     float globalMean = 0, globalMeanSum = 0, globalMeanArray;
-	MPI_Gather( localMean, 1, MPI_FLOAT , globalMeanArray , int recvcount , MPI_FLOAT , 0 , MPI_COMM_WORLD);
+	MPI_Gather( &localMean, 1, MPI_FLOAT , globalMeanArray , 1, MPI_FLOAT , 0 , MPI_COMM_WORLD);
 
     for( p=0; p<numProcs; p++ )
 		{
