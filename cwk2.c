@@ -101,8 +101,12 @@ int main( int argc, char **argv )
 		return EXIT_FAILURE;
 	}
     
-    MPI_Scatter( globalData , localSize , MPI_FLOAT , localData , localSize , MPI_FLOAT , 0 , MPI_COMM_WORLD);
     //send localData to ranks
+    //Collective communication
+    MPI_Scatter( globalData , localSize , MPI_FLOAT , localData , localSize , MPI_FLOAT , 0 , MPI_COMM_WORLD);
+    
+
+    // //Non-collective communication
     // if( rank==0 )
 	// {
         
@@ -127,26 +131,35 @@ int main( int argc, char **argv )
     localMean = localSum/localSize;
     
     
-    // Point-to-point: Use a loop of send-and-receives.
-    float globalMean = 0, globalMeanSum = 0;
-	if( rank==0 )
-	{
-		// Start the running total with rank 0's count.
-		globalMeanSum = localMean;
+    float globalMean = 0, globalMeanSum = 0, globalMeanArray;
+	MPI_Gather( localMean, 1, MPI_FLOAT , globalMeanArray , int recvcount , MPI_FLOAT , 0 , MPI_COMM_WORLD);
 
-		// Now add on all of the counts from the other processes.
-		for( p=1; p<numProcs; p++ )
+    for( p=0; p<numProcs; p++ )
 		{
-			float next;
-			MPI_Recv( &next, 1, MPI_FLOAT, p, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
-			globalMeanSum += next;
+			globalMeanSum+=globalMeanArray[p];
 		}
+
         globalMean = globalMeanSum/numProcs;
-	}
-	else
-	{
-		MPI_Send( &localMean, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD );
-	}
+
+    //non-collective communication
+    // if( rank==0 )
+	// {
+	// 	// Start the running total with rank 0's count.
+	// 	globalMeanSum = localMean;
+
+	// 	// Now add on all of the counts from the other processes.
+	// 	for( p=1; p<numProcs; p++ )
+	// 	{
+	// 		float next;
+	// 		MPI_Recv( &next, 1, MPI_FLOAT, p, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
+	// 		globalMeanSum += next;
+	// 	}
+    //     globalMean = globalMeanSum/numProcs;
+	// }
+	// else
+	// {
+	// 	MPI_Send( &localMean, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD );
+	// }
 
 
 
