@@ -131,7 +131,8 @@ int main( int argc, char **argv )
     localMean = localSum/localSize;
     
     
-    float globalMean = 0, globalMeanSum = 0, globalMeanArray;
+    float globalMean = 0, globalMeanSum = 0;
+    float globalMeanArray[];
 	MPI_Gather( &localMean, 1, MPI_FLOAT , globalMeanArray , 1, MPI_FLOAT , 0 , MPI_COMM_WORLD);
 
     for( p=0; p<numProcs; p++ )
