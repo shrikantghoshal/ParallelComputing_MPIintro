@@ -163,7 +163,7 @@ int main( int argc, char **argv )
         // Your code MUST call this function after the mean and variance have been calculated using your parallel algorithms.
         // Do not modify the function itself (which is defined in 'cwk2_extra.h'), as it will be replaced with a different
         // version for the purpose of assessing. Also, don't just put the values from serial calculations here or you will lose marks.
-        finalMeanAndVariance( 0.0, 0.0 );
+        finalMeanAndVariance( globalMean, 0.0 );
             // You should replace the first argument with your mean, and the second with your variance.
 
         // Check the answers against the serial calculations. This also demonstrates how to perform the calculations
