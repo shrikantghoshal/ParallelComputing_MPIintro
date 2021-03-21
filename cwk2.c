@@ -104,17 +104,18 @@ int main( int argc, char **argv )
     //send localData to ranks
     if( rank==0 )
 	{
-		// Copy first segment to own localData (nb. never 'send' to self!)
-		for( i=0; i<localSize; i++ ) localData[i] = globalData[i];
+        MPI_Scatter( globalData , localSize , MPI_FLOAT , localData , localSize , MPI_FLOAT , 0 , MPI_COMM_WORLD);
+		// // Copy first segment to own localData (nb. never 'send' to self!)
+		// for( i=0; i<localSize; i++ ) localData[i] = globalData[i];
 
-		// Send the remaining segments.
-		for( p=1; p<numProcs; p++ )
-			MPI_Send( &globalData[p*localSize], localSize, MPI_INT, p, 0, MPI_COMM_WORLD );
+		// // Send the remaining segments.
+		// for( p=1; p<numProcs; p++ )
+		// 	MPI_Send( &globalData[p*localSize], localSize, MPI_INT, p, 0, MPI_COMM_WORLD );
 	}
-	else
-	{
-		MPI_Recv( localData, localSize, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
-	}
+	// else
+	// {
+	// 	MPI_Recv( localData, localSize, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
+	// }
 
     
     float localMean=0, localSum=0;
