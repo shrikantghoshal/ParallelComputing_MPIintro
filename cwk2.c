@@ -130,7 +130,7 @@ int main( int argc, char **argv )
 	if( rank==0 )
 	{
 		// Start the running total with rank 0's count.
-		globalMeanSum = localSum;
+		globalMeanSum = localMean;
 
 		// Now add on all of the counts from the other processes.
 		for( p=1; p<numProcs; p++ )
