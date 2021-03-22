@@ -105,7 +105,7 @@ int main( int argc, char **argv )
     //Collective communication
     MPI_Scatter( globalData , localSize , MPI_FLOAT , localData , localSize , MPI_FLOAT , 0 , MPI_COMM_WORLD);
     
-    float localMean, localSum;
+    float localMean=0, localSum=0;
     for(p=0; p<localSize; p++)
     {
         localSum+=localData[p];
@@ -178,13 +178,14 @@ int main( int argc, char **argv )
 		MPI_Recv( &globalMean, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
 	}
 
-    float localSumSq;
+    float localSumSq = 0;
     for(p=0;p<localSize; p++)
     {
         localSumSq += (*localData - globalMean)*(*localData - globalMean);
     }
     
     float globalVariance = 0, globalSumSq = 0;
+
     MPI_Reduce( &localSumSq , &globalSumSq , 1 , MPI_FLOAT , MPI_SUM , 0 , MPI_COMM_WORLD);
     globalVariance = globalSumSq/globalSize;
     
