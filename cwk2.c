@@ -1,9 +1,13 @@
 //
-// Starting code for the MPI coursework.
+//Made by Shrikant Ghoshal (el18s2g) - 201265711
+//For Coursework 2 of University of Leeds teaching module Parallel Computing (COMP3221) 
 //
-// See lectures and/or the worksheet corresponding to this part of the module for instructions
-// on how to build and launch MPI programs. A simple makefile has also been included (usage optional).
+//Submitted on 22/03/2021
 //
+//Uses pre-included header file cwk2_extra.h -> to be changed for assesment
+//Requires an MPI library to compile and run.
+//
+
 
 
 //
