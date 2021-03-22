@@ -186,7 +186,7 @@ int main( int argc, char **argv )
     
     float globalVariance = 0, globalSumSq = 0;
     float globalSumSqArray[numProcs-1];
-    MPI_Reduce( &localSumSq , globalSumSq , 1 , MPI_FLOAT , MPI_SUM , 0 , MPI_COMM_WORLD);
+    MPI_Reduce( &localSumSq , &globalSumSq , 1 , MPI_FLOAT , MPI_SUM , 0 , MPI_COMM_WORLD);
 	// MPI_Gather( &localSumSq, 1, MPI_FLOAT , globalSumSqArray, 1, MPI_FLOAT , 0 , MPI_COMM_WORLD);
 
     // for( p=0; p<numProcs; p++ )
