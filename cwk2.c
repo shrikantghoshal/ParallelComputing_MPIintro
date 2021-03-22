@@ -80,12 +80,15 @@ int main( int argc, char **argv )
 		localSize = globalSize / numProcs;
 
 		// Note &localSize looks to the MPI function like an array of size 1.
-		for( p=1; p<numProcs; p++ )
-			MPI_Send( &localSize, 1, MPI_INT, p ,0, MPI_COMM_WORLD );
+		// for( p=1; p<numProcs; p++ ){
+		// 	MPI_Send( &localSize, 1, MPI_INT, p ,0, MPI_COMM_WORLD );
+        // }
+        MPI_Bcast( &localSize , 1 , MPI_INT , 0, MPI_COMM_WORLD);
 	}
 	else
 	{
-		MPI_Recv( &localSize, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
+		// MPI_Recv( &localSize, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
+        MPI_Bcast( &localSize , 1 , MPI_INT , 0, MPI_COMM_WORLD);
 	}
 
     //
