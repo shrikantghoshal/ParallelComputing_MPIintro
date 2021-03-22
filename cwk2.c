@@ -78,16 +78,10 @@ int main( int argc, char **argv )
 	if( rank==0 )
 	{
 		localSize = globalSize / numProcs;
-
-		// Note &localSize looks to the MPI function like an array of size 1.
-		// for( p=1; p<numProcs; p++ ){
-		// 	MPI_Send( &localSize, 1, MPI_INT, p ,0, MPI_COMM_WORLD );
-        // }
         MPI_Bcast( &localSize , 1 , MPI_INT , 0, MPI_COMM_WORLD);
 	}
 	else
 	{
-		// MPI_Recv( &localSize, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
         MPI_Bcast( &localSize , 1 , MPI_INT , 0, MPI_COMM_WORLD);
 	}
 
@@ -172,13 +166,15 @@ int main( int argc, char **argv )
 
     if( rank==0 )
 	{
+        MPI_Bcast( &globalMean , 1 , MPI_FLOAT , 0, MPI_COMM_WORLD);
         	// Note &localSize looks to the MPI function like an array of size 1.
-		for( p=1; p<numProcs; p++ )
-			MPI_Send( &globalMean, 1, MPI_FLOAT, p ,0, MPI_COMM_WORLD );
+		// for( p=1; p<numProcs; p++ )
+		// 	MPI_Send( &globalMean, 1, MPI_FLOAT, p ,0, MPI_COMM_WORLD );
 	}
 	else
 	{
-		MPI_Recv( &globalMean, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
+		// MPI_Recv( &globalMean, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
+        MPI_Bcast( &globalMean , 1 , MPI_FLOAT , 0, MPI_COMM_WORLD);
 	}
 
     float localSumSq = 0;
@@ -192,7 +188,6 @@ int main( int argc, char **argv )
     MPI_Reduce( &localSumSq , &globalSumSq , 1 , MPI_FLOAT , MPI_SUM , 0 , MPI_COMM_WORLD);
     globalVariance = globalSumSq/globalSize;
     
-//check binary tree method
 
     //
     // Output the results alongside a serial check.
