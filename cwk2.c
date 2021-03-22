@@ -74,7 +74,14 @@ int main( int argc, char **argv )
     // Start the timing now, after the data has been loaded (will only output on rank 0).
     double startTime = MPI_Wtime();
 
+//=============================Coursework input start=============================//
     
+
+    //
+    // Task 1: Calculate the mean using all available processes.
+    //
+
+    //Broadcast the localSize variable to all processes using MPI_Bcast()
 	if( rank==0 )
 	{
 		localSize = globalSize / numProcs;
@@ -85,11 +92,7 @@ int main( int argc, char **argv )
         MPI_Bcast( &localSize , 1 , MPI_INT , 0, MPI_COMM_WORLD);
 	}
 
-    //
-    // Task 1: Calculate the mean using all available processes.
-    //
-    
-    //send localSize to all ranks to allocate appropriate memory
+    //Error reporting for a failure to allocate memory locally
     float *localData= (float*) malloc( localSize*sizeof(float) );
     if( !localData )
 	{
@@ -97,97 +100,60 @@ int main( int argc, char **argv )
 		MPI_Finalize();
 		return EXIT_FAILURE;
 	}
-    
-    //send localData to ranks
-    //Collective communication
+
+    //Distribute globalData to localData on all processes using MPI_Scatter()
     MPI_Scatter( globalData , localSize , MPI_FLOAT , localData , localSize , MPI_FLOAT , 0 , MPI_COMM_WORLD);
     
+    //Local calculation - Mean -> Calculate local mean by adding all elements in a localData and dividing by the localSize.
     float localMean=0, localSum=0;
     for(p=0; p<localSize; p++)
     {
         localSum+=localData[p];
     }
     localMean = localSum/localSize;
-    
+
+    //Accumulate all local mean calculations to root 0 and store in an array using MPI_Gather()
     float globalMean = 0, globalMeanSum = 0;
     float globalMeanArray[numProcs-1];
 	MPI_Gather( &localMean, 1, MPI_FLOAT , globalMeanArray , 1, MPI_FLOAT , 0 , MPI_COMM_WORLD);
 
+    //Global calculation - Mean -> Add all of the locally calculated mean values and divide by the number of processes
     for( p=0; p<numProcs; p++ )
 	{
 		globalMeanSum+=globalMeanArray[p];
 	}
-
     globalMean = globalMeanSum/numProcs;
 
-
-   // //Non-collective communication - Sending data to all ranks for Mean
-    // if( rank==0 )
-	// {
-        
-		// // Copy first segment to own localData (nb. never 'send' to self!)
-		// for( i=0; i<localSize; i++ ) localData[i] = globalData[i];
-
-		// // Send the remaining segments.
-		// for( p=1; p<numProcs; p++ )
-		// 	MPI_Send( &globalData[p*localSize], localSize, MPI_INT, p, 0, MPI_COMM_WORLD );
-	// }
-	// else
-	// {
-	// 	MPI_Recv( localData, localSize, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
-	// }
-
-    //Non-collective communication - combining data from all ranks for Mean
-
-    // if( rank==0 )
-	// {
-	// 	// Start the running total with rank 0's count.
-	// 	globalMeanSum = localMean;
-
-	// 	// Now add on all of the counts from the other processes.
-	// 	for( p=1; p<numProcs; p++ )
-	// 	{
-	// 		float next;
-	// 		MPI_Recv( &next, 1, MPI_FLOAT, p, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
-	// 		globalMeanSum += next;
-	// 	}
-    //     globalMean = globalMeanSum/numProcs;
-	// }
-	// else
-	// {
-	// 	MPI_Send( &localMean, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD );
-	// }
-
-//=============================Task 1 END=============================//
-
+//-----------------------------Task 1 END-----------------------------//
+    
     //
     // Task 2. Calculate the variance using all processes.
     //
 
+    //Broadcast the previously calculated globalMean to all processes using MPI_Bcast()
     if( rank==0 )
 	{
         MPI_Bcast( &globalMean , 1 , MPI_FLOAT , 0, MPI_COMM_WORLD);
-        	// Note &localSize looks to the MPI function like an array of size 1.
-		// for( p=1; p<numProcs; p++ )
-		// 	MPI_Send( &globalMean, 1, MPI_FLOAT, p ,0, MPI_COMM_WORLD );
 	}
 	else
 	{
-		// MPI_Recv( &globalMean, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
         MPI_Bcast( &globalMean , 1 , MPI_FLOAT , 0, MPI_COMM_WORLD);
 	}
+    //Note: This process uses the global variable globalMean which was initialised with a value of 0 and later calculated in Task 1.
 
+    //Local calculation - Variance: STEP 1 -> Calculating the values of the square of (difference between one instance of data and the total mean value), and adding them up for each process
     float localSumSq = 0;
     for(p=0;p<localSize; p++)
     {
         localSumSq += (localData[p] - globalMean)*(localData[p] - globalMean);
     }
     
+    //Global Calculation - Variance: STEP 2 -> Reduction of all the locally calculated values to root 0 using MPI_Reduce() - operation: MPI_SUM
     float globalVariance = 0, globalSumSq = 0;
-
     MPI_Reduce( &localSumSq , &globalSumSq , 1 , MPI_FLOAT , MPI_SUM , 0 , MPI_COMM_WORLD);
     globalVariance = globalSumSq/globalSize;
-    
+
+//-----------------------------Task 2 END-----------------------------//
 
     //
     // Output the results alongside a serial check.
@@ -226,6 +192,8 @@ int main( int argc, char **argv )
     //
     if( rank==0 ) free( globalData );
 
+    free( localData );
+//=============================Coursework input finish=============================//
     MPI_Finalize();
 
     return EXIT_SUCCESS;
